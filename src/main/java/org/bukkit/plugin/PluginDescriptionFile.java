@@ -9,8 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.permission.PermissionDescription;
+import org.bukkit.permission.RootPermissionDescription;
 import org.bukkit.permission.PermissionDescriptionException;
+import org.bukkit.permission.PermissionDescriptionNodeException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -28,7 +29,7 @@ public final class PluginDescriptionFile {
     private ArrayList<String> authors = new ArrayList<String>();
     private String website = null;
     private boolean database = false;
-    private PermissionDescription permissions = null;
+    private RootPermissionDescription permissions = null;
 
     @SuppressWarnings("unchecked")
     public PluginDescriptionFile(final InputStream stream) throws InvalidDescriptionException {
@@ -134,7 +135,7 @@ public final class PluginDescriptionFile {
         this.database = database;
     }
 
-    public PermissionDescription getPermissions() {
+    public RootPermissionDescription getPermissions() {
         return permissions;
     }
 
@@ -230,11 +231,13 @@ public final class PluginDescriptionFile {
 
         if (map.containsKey("permissions")) {
             try {
-                Map<String, Map> perms = (Map<String, Map>)map.get("permissions");
-                this.permissions = new PermissionDescription(perms);
+                Map<String, Object> perms = (Map<String, Object>)map.get("permissions");
+                this.permissions = new RootPermissionDescription(perms);
             } catch (ClassCastException ex) {
                 throw new InvalidDescriptionException(ex, "permissions are of wrong type");
             } catch (PermissionDescriptionException ex) {
+                throw new InvalidDescriptionException(ex, "permissions are invalid");
+            } catch (PermissionDescriptionNodeException ex) {
                 throw new InvalidDescriptionException(ex, "permissions are invalid");
             }
         }
