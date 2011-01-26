@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Listener;
+import org.bukkit.permission.PermissionDescription;
 
 /**
  * Handles all plugin management from the Server
@@ -32,6 +33,7 @@ public final class SimplePluginManager implements PluginManager {
     private final Map<Pattern, PluginLoader> fileAssociations = new HashMap<Pattern, PluginLoader>();
     private final List<Plugin> plugins = new ArrayList<Plugin>();
     private final Map<String, Plugin> lookupNames = new HashMap<String, Plugin>();
+    private final Map<String, PermissionDescription> permissions = new HashMap<String, PermissionDescription>();
     private final Map<Event.Type, SortedSet<RegisteredListener>> listeners = new EnumMap<Event.Type, SortedSet<RegisteredListener>>(Event.Type.class);
     private final Comparator<RegisteredListener> comparer = new Comparator<RegisteredListener>() {
         public int compare(RegisteredListener i, RegisteredListener j) {
@@ -161,7 +163,19 @@ public final class SimplePluginManager implements PluginManager {
 
         if (result != null) {
             plugins.add(result);
-            lookupNames.put(result.getDescription().getName(), result);
+
+            PluginDescriptionFile desc = result.getDescription();
+            PermissionDescription perm = desc.getPermissions();
+
+            lookupNames.put(desc.getName(), result);
+            
+            if (perm != null) {
+                String[] names = perm.getNames();
+
+                for (String name : names) {
+                    permissions.put(name, perm);
+                }
+            }
         }
 
         return result;
@@ -238,6 +252,11 @@ public final class SimplePluginManager implements PluginManager {
             listeners.clear();
             fileAssociations.clear();
         }
+    }
+
+    public PermissionDescription getPermissions(final String path) {
+        String root = path.split("\\.", 2)[0];
+        return permissions.get(root);
     }
 
     /**
