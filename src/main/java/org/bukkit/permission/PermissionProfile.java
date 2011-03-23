@@ -18,7 +18,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
  */
 public class PermissionProfile implements Permissions {
     private String name;
-    private final Map<String, Object> values = new HashMap<String, Object>();
+    private final Map<String, Object> permissionValues = new HashMap<String, Object>();
     private final Server server;
     private final PluginManager manager;
     private static final Yaml yaml = new Yaml(new SafeConstructor());
@@ -38,18 +38,18 @@ public class PermissionProfile implements Permissions {
         this.name = name;
     }
 
-    public void set(final String key, final Object value) {
+    public void setPermission(final String key, final Object value) {
         PermissionDescriptionNode desc = manager.getPermissionPath(key);
 
         if (desc.isValid(value)) {
-            values.put(key, value);
+            permissionValues.put(key, value);
         } else {
             throw new IllegalArgumentException("Cannot set " + key + " to " + value);
         }
     }
 
-    public <T> T get(final String key) {
-        T result = (T)values.get(key);
+    public <T> T getPermission(final String key) {
+        T result = (T)permissionValues.get(key);
 
         if (result == null) {
             PermissionDescriptionNode desc = manager.getPermissionPath(key);
@@ -60,8 +60,8 @@ public class PermissionProfile implements Permissions {
         return result;
     }
 
-    public boolean isSet(final String key) {
-        return values.containsKey(key);
+    public boolean isPermissionSet(final String key) {
+        return permissionValues.containsKey(key);
     }
 
     private void loadNode(final String path, Object node) throws InvalidPermissionProfileException {
@@ -79,7 +79,7 @@ public class PermissionProfile implements Permissions {
                 throw new InvalidPermissionProfileException(ex);
             }
         } else {
-            set(path, node);
+            setPermission(path, node);
         }
     }
 

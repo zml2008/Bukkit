@@ -9,9 +9,9 @@ package org.bukkit.permission;
  * Represents a structure which may contain permissions, such as a profile or a user
  */
 public interface Permissions {
-    <T> T get(final String key);
+    <T> T getPermission(final String key);
 
-    boolean isSet(final String key);
+    boolean isPermissionSet(final String key);
 
-    void set(final String key, final Object value);
+    void setPermission(final String key, final Object value);
 }

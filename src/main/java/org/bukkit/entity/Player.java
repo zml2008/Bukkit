@@ -4,12 +4,13 @@ package org.bukkit.entity;
 import java.net.InetSocketAddress;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permission.Permissions;
 
 /**
  * Represents a player, connected or not
  *
  */
-public interface Player extends HumanEntity, CommandSender {
+public interface Player extends HumanEntity, CommandSender, Permissions {
     /**
      * Checks if this player is currently online
      *
