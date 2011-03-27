@@ -1,30 +1,21 @@
 package org.bukkit.permission;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.bukkit.Server;
-import org.bukkit.plugin.PluginManager;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public class PermissionGroup implements Permissions {
     private String name;
-    private final Map<String, Object> permissionValues = new HashMap<String, Object>();
     private final Server server;
-    private final PluginManager manager;
-    //private static final Yaml yaml = new Yaml(new SafeConstructor());
+    private PermissionProfile overrideProfile;
+    private List<PermissionProfile> profiles;
 
     public PermissionGroup(final Server server, final String name) {
         this.server = server;
         this.name = name;
 
-        this.manager = server.getPluginManager();
+        this.profiles = Collections.synchronizedList(new LinkedList<PermissionProfile>());
     }
 
     public String getName() {
@@ -36,31 +27,118 @@ public class PermissionGroup implements Permissions {
     }
 
     public void setPermission(final String key, final Object value) {
-        PermissionDescriptionNode desc = manager.getPermissionPath(key);
-
-        if (desc.isValid(value)) {
-            permissionValues.put(key, value);
-        } else {
-            throw new IllegalArgumentException("Cannot set " + key + " to " + value);
-        }
+        // a group has its own profile, that takes precedence
+        // over any other profiles that it has
+        PermissionProfile profile = getOverrideProfile();
+        profile.setPermission(key, value);
     }
 
     public <T> T getPermission(final String key) {
-        T result = (T)permissionValues.get(key);
+        if (overrideProfile.isPermissionSet(key)) {
+            return overrideProfile.getPermission(key);
+        }
 
-        if (result == null) {
-            PermissionDescriptionNode desc = manager.getPermissionPath(key);
-
-            result = (T)desc.getDefault();
+        T result = null;
+        for (PermissionProfile profile : profiles) {
+            if (profile.isPermissionSet(key)) {
+                result = profile.getPermission(key);
+            }
         }
 
         return result;
     }
 
     public boolean isPermissionSet(final String key) {
-        return permissionValues.containsKey(key);
+        if (overrideProfile.isPermissionSet(key)) {
+            return true;
+        }
+        for (PermissionProfile profile : profiles) {
+            if (profile.isPermissionSet(key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
+
+    /**
+     * The default permission profile for a group.
+     *
+     * This profile overrides any other profiles settings that may be defined.
+     *
+     * @return this group's default permission profile
+     * 
+     * TODO get the group profile from disk if it exists
+     */
+    private PermissionProfile getOverrideProfile() {
+        if (overrideProfile == null) {
+            overrideProfile = new PermissionProfile(server, name);
+        }
+        return overrideProfile;
+    }
+
+    /**
+     * Retrieve the list of all profiles associated with this group.
+     * 
+     * These profiles determine the permissions of the group. Profiles that occur later
+     * in the list take precedence over earlier ones.
+     * 
+     * Every group also has its own profile, whose permissions override every
+     * profile in this list. This is known as the override profile.
+     * 
+     * This list is mutable, and should be used to add or remove profiles to the group.
+     * It is imperative that you synchronize on this list if you iterate over it.
+     * 
+     * @return A thread safe list of PermissionProfiles that apply to this group.
+     */
+    public List<PermissionProfile> getProfiles(){
+        return profiles;
+    }
+
+    /**
+     * Add a profile to this group, at the given level.
+     * 
+     * Profiles with higher levels will override a lower profiles permissions.
+     * If two profiles have the same level, the one whose name is 'lower' will
+     * be overridden.
+     * 
+     * @param profile The PermissionProfile to add to this group.
+     * @param level Higher levelled profiles override lower levelled ones.
+     *//*
+    public void addPermissionProfile(PermissionProfile profile, int level) {
+        if (profile == null) {
+            return;
+        }
+        ProfileLevel profileLevel = new ProfileLevel(profile, level);
+        profiles.add(profileLevel);
+    }*/
 /*
+    class ProfileLevel implements Comparable<ProfileLevel>{
+        private final PermissionProfile profile;
+        private int level;
+
+        public ProfileLevel(PermissionProfile profile, int level) {
+            this.profile = profile;
+            this.level = level;
+        }
+
+        PermissionProfile getProfile(){
+            return profile;
+        }
+
+        public int compareTo(ProfileLevel o) {
+            if (this.equals(o)) {
+                return 0;
+            }
+            if (this.level == o.level) {
+                return this.profile.getName().compareTo(o.profile.getName());
+            } else {
+                return this.level - o.level;
+            }
+        }
+    }
+    */
+    /*
     private void loadNode(final String path, Object node) throws InvalidPermissionProfileException {
         if (node instanceof Map<?, ?>) {
             try {
