@@ -33,6 +33,11 @@ public class PermissionGroup implements Permissions {
         profile.setPermission(key, value);
     }
 
+    public void unsetPermission(String key) {
+        PermissionProfile profile = getOverrideProfile();
+        profile.unsetPermission(key);
+    }
+
     public <T> T getPermission(final String key) {
         if (overrideProfile.isPermissionSet(key)) {
             return overrideProfile.getPermission(key);

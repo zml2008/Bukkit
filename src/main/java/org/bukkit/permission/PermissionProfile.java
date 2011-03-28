@@ -48,6 +48,10 @@ public class PermissionProfile implements Permissions {
         }
     }
 
+    public void unsetPermission(String key) {
+        permissionValues.remove(key);
+    }
+
     public <T> T getPermission(final String key) {
         T result = (T)permissionValues.get(key);
 

@@ -14,4 +14,6 @@ public interface Permissions {
     boolean isPermissionSet(final String key);
 
     void setPermission(final String key, final Object value);
+
+    void unsetPermission(final String key);
 }
