@@ -138,4 +138,15 @@ public interface Player extends HumanEntity, CommandSender, Permissions {
      * @return A thread safe list of PermissionGroups that apply to this player.
      */
     List<PermissionGroup> getGroups();
+
+    /**
+     * Players inherit their rank from the groups they are part of. The group with the highest
+     * rank determines the rank of this player.
+     * 
+     * This rank can be used in inter-player permissions. For example,players may be allowed 
+     * to teleport to any other player whose rank is lower than theirs.
+     * 
+     * @return the rank of this player
+     */
+    public int getRank();
 }

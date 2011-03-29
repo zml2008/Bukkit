@@ -8,12 +8,14 @@ import org.bukkit.Server;
 public class PermissionGroup implements Permissions {
     private String name;
     private final Server server;
+    private int rank;
     private PermissionProfile overrideProfile;
     private List<PermissionProfile> profiles;
 
     public PermissionGroup(final Server server, final String name) {
         this.server = server;
         this.name = name;
+        this.rank = 0;
 
         this.profiles = Collections.synchronizedList(new LinkedList<PermissionProfile>());
     }
@@ -98,6 +100,30 @@ public class PermissionGroup implements Permissions {
      */
     public List<PermissionProfile> getProfiles(){
         return profiles;
+    }
+
+    /**
+     * By default every group has rank 0. The rank does not affect the order in which group
+     * permissions are applied to members of that group. Rather, since players are typically
+     * grouped together, it allows for a heirachial system where inter-player permissions can
+     * be set depending on who has superior (or inferior) rank.
+     * 
+     * For example, you may allow players to teleport to any other player whose max rank is lower
+     * than theirs.
+     * 
+     * @return the rank of this group
+     */
+    public int getRank() {
+        return rank;
+    }
+
+    /**
+     * @param rank the new rank of this group
+     * 
+     * @see getRank()
+     */
+    public void setRank(int rank) {
+        this.rank = rank;
     }
 
     /**
