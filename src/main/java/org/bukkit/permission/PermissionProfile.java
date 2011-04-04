@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.bukkit.Server;
-import org.bukkit.plugin.PluginManager;
+
+import org.bukkit.Bukkit;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -17,29 +17,20 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
  * Represents a profile of permissions
  */
 public class PermissionProfile implements Permissions {
-    private String name;
+    private final String name;
     private final Map<String, Object> permissionValues = new HashMap<String, Object>();
-    private final Server server;
-    private final PluginManager manager;
     private static final Yaml yaml = new Yaml(new SafeConstructor());
 
-    public PermissionProfile(final Server server, final String name) {
-        this.server = server;
+    public PermissionProfile(final String name) {
         this.name = name;
-
-        this.manager = server.getPluginManager();
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(final String name) {
-        this.name = name;
-    }
-
     public void setPermission(final String key, final Object value) {
-        PermissionDescriptionNode desc = manager.getPermissionPath(key);
+        PermissionDescriptionNode desc = Bukkit.getServer().getPluginManager().getPermissionPath(key);
 
         if (desc.isValid(value)) {
             permissionValues.put(key, value);
@@ -56,7 +47,7 @@ public class PermissionProfile implements Permissions {
         T result = (T)permissionValues.get(key);
 
         if (result == null) {
-            PermissionDescriptionNode desc = manager.getPermissionPath(key);
+            PermissionDescriptionNode desc = Bukkit.getServer().getPluginManager().getPermissionPath(key);
 
             result = (T)desc.getDefault();
         }
@@ -87,9 +78,9 @@ public class PermissionProfile implements Permissions {
         }
     }
 
-    public static PermissionProfile loadProfile(final Server server,
-            final String name, final Map<String, Object> map) throws InvalidPermissionProfileException {
-        PermissionProfile result = new PermissionProfile(server, name);
+    public static PermissionProfile loadProfile(final String name,
+            final Map<String, Object> map) throws InvalidPermissionProfileException {
+        PermissionProfile result = new PermissionProfile(name);
         Set<String> keys = map.keySet();
 
         for (String key : keys) {
@@ -99,14 +90,13 @@ public class PermissionProfile implements Permissions {
         return result;
     }
 
-    public static PermissionProfile[] loadProfiles(final Server server,
-            final Map<String, Object> map) throws InvalidPermissionProfileException {
+    public static PermissionProfile[] loadProfiles(final Map<String, Object> map) throws InvalidPermissionProfileException {
         List<PermissionProfile> result = new ArrayList<PermissionProfile>();
         Set<String> keys = map.keySet();
 
         for (String key : keys) {
             try {
-                result.add(loadProfile(server, key, (Map<String, Object>) map.get(key)));
+                result.add(loadProfile(key, (Map<String, Object>) map.get(key)));
             } catch (ClassCastException ex) {
                 throw new InvalidPermissionProfileException("Attempted to load profile " + key, ex);
             }
@@ -115,13 +105,13 @@ public class PermissionProfile implements Permissions {
         return result.toArray(new PermissionProfile[0]);
     }
 
-    public static PermissionProfile[] loadProfiles(final Server server, final InputStream stream)
+    public static PermissionProfile[] loadProfiles(final InputStream stream)
             throws InvalidPermissionProfileException {
-        return loadProfiles(server, (Map<String, Object>)yaml.load(stream));
+        return loadProfiles((Map<String, Object>)yaml.load(stream));
     }
 
-    public static PermissionProfile[] loadProfiles(final Server server, final Reader reader)
+    public static PermissionProfile[] loadProfiles(final Reader reader)
             throws InvalidPermissionProfileException {
-        return loadProfiles(server, (Map<String, Object>)yaml.load(reader));
+        return loadProfiles((Map<String, Object>)yaml.load(reader));
     }
 }

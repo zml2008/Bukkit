@@ -3,17 +3,14 @@ package org.bukkit.permission;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.bukkit.Server;
 
 public class PermissionGroup implements Permissions {
     private String name;
-    private final Server server;
     private int rank;
     private PermissionProfile overrideProfile;
     private List<PermissionProfile> profiles;
 
-    public PermissionGroup(final Server server, final String name) {
-        this.server = server;
+    public PermissionGroup(final String name) {
         this.name = name;
         this.rank = 0;
 
@@ -42,13 +39,13 @@ public class PermissionGroup implements Permissions {
 
     public <T> T getPermission(final String key) {
         if (overrideProfile.isPermissionSet(key)) {
-            return overrideProfile.getPermission(key);
+            return (T) overrideProfile.getPermission(key);
         }
 
         T result = null;
         for (PermissionProfile profile : profiles) {
             if (profile.isPermissionSet(key)) {
-                result = profile.getPermission(key);
+                result = (T) profile.getPermission(key);
             }
         }
 
@@ -79,7 +76,7 @@ public class PermissionGroup implements Permissions {
      */
     private PermissionProfile getOverrideProfile() {
         if (overrideProfile == null) {
-            overrideProfile = new PermissionProfile(server, name);
+            overrideProfile = new PermissionProfile(name);
         }
         return overrideProfile;
     }
