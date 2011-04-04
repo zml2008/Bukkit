@@ -8,12 +8,13 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permission.PermissionGroup;
 import org.bukkit.permission.Permissions;
+import org.bukkit.permission.Rank;
 
 /**
  * Represents a player, connected or not
  *
  */
-public interface Player extends HumanEntity, CommandSender, Permissions {
+public interface Player extends HumanEntity, CommandSender, Permissions, Rank {
     /**
      * Checks if this player is currently online
      *
@@ -139,14 +140,4 @@ public interface Player extends HumanEntity, CommandSender, Permissions {
      */
     List<PermissionGroup> getGroups();
 
-    /**
-     * Players inherit their rank from the groups they are part of. The group with the highest
-     * rank determines the rank of this player.
-     * 
-     * This rank can be used in inter-player permissions. For example,players may be allowed 
-     * to teleport to any other player whose rank is lower than theirs.
-     * 
-     * @return the rank of this player
-     */
-    public int getRank();
 }
