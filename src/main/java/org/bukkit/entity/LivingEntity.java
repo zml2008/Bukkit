@@ -1,10 +1,12 @@
 package org.bukkit.entity;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.effects.EntityEffect;
 
 /**
  * Represents a living entity, such as a monster or player
@@ -206,5 +208,22 @@ public interface LivingEntity extends Entity {
      * @param ticks NoDamageTicks
      */
     public void setNoDamageTicks(int ticks);
+
+    /**
+     * Return a Collection of a player's active entity effects for inspection.
+     * This should not be used to add or remove entity effects, use {@code addEntityEffect} and
+     * {@code removeEntityEffect} instead
+     * @return A potentially unmodifiable collection of EntityEffects
+     */
+    public Collection<EntityEffect> getActiveEntityEffects();
+
+    /**
+     *
+     * @param effect The entity effect to remove
+     * @return
+     */
+    public boolean removeEntityEffect(EntityEffect effect);
+
+    public boolean addEntityEffect(EntityEffect effect);
 
 }
